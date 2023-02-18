@@ -19,7 +19,7 @@ The problem of the MVP of the project consists of two parts. One; read the engli
 
 | Characteristic | Priority      | Complexity |
 |:--------------:|:-------------:|:----------:|
-| The program should be able to parse english text into phonetic text | High | Easy |
+
 
 ##### Speech synthesis
 
