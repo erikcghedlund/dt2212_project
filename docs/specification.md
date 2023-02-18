@@ -10,6 +10,8 @@ The problem of the MVP of the project consists of two parts. One; read the engli
 
 ### Implementation
 
+
+
 #### Tables of objects in simulation and their characteristics
 
 ##### Lyric parsing
@@ -22,7 +24,7 @@ The problem of the MVP of the project consists of two parts. One; read the engli
 
 | Characteristic | Priority      | Complexity |
 |:--------------:|:-------------:|:----------:|
-| TODO    | TODO | TODO |
+| The program should be able to synthesis the phonetic text with its Frequency and Formant| High | Easy |
 
 ##### Melody parsing
 
