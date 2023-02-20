@@ -51,13 +51,20 @@ The problem of the MVP of the project consists of two parts. One; read the Engli
 
 | Characteristic | Priority      | Complexity |
 |:--------------:|:-------------:|:----------:|
-| Interface for parsing the English text into phoenetic text with a [convert] button | Medium High | Easy |
+| Interface for parsing the English text into phonetic text with a [convert] button | Medium High | Easy |
 | Interface for changing every musical parameters | Medium High | Easy |
 
 
 
-### References
-Python program that utilizes the Carnegie-Mellon University Pronouncing Dictionary to convert English text into the International Phonetic Alphabet.: https://pypi.org/project/eng-to-ipa/
+### References/Dependencies
+
+- [Well used math-library Numpy that will be used to generate the waveforms](https://numpy.org/)
+
+- [Library for generating sound from Numpy-arrays](https://python-sounddevice.readthedocs.io/en/0.4.5/index.html#)
+
+- [Python program that utilizes the Carnegie-Mellon University Pronouncing Dictionary to convert English text into the International Phonetic Alphabet.](https://pypi.org/project/eng-to-ipa/)
+
+- [Formants of the different phonetic vowels](https://corpus.eduhk.hk/english_pronunciation/index.php/2-2-formants-of-vowels/)
 
 ### Risks
 
