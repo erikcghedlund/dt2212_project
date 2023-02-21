@@ -4,7 +4,9 @@ import sounddevice as sd
 freq = 220
 samplerate = int(4.41e4)
 length = 4
-volume = 0.3
+volume = 1
+slope = -6
+partials = 30
 
 def sawtooth_wave(freq, length, samplerate, partials, slope):
     x = np.linspace(0, length, samplerate * length)
@@ -15,7 +17,7 @@ def db_to_amp(db):
 
 
 def main():
-    wave = sawtooth_wave(freq, length, samplerate, 60, -6)
+    wave = sawtooth_wave(freq, length, samplerate, partials, slope)
     sd.play(wave * volume, samplerate)
     sd.wait()
 
