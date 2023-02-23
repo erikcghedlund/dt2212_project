@@ -1,0 +1,8 @@
+import eng_to_ipa as ipa
+
+def trans_eng_into_ipa():
+    EnglishWord = input("Paste the lyrics here: ")
+    Vowel = ipa.convert(EnglishWord)
+    print(Vowel)
+
+trans_eng_into_ipa()
