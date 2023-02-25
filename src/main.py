@@ -23,12 +23,13 @@ formants = [730, 1090, 2300, 2440, 2800]
 cache_file = ".cache"
 pc = PersistentCache(LRUCache, cache_file, maxsize=32)
 
+
 def vibrato_wave(freq, length, amp, samplerate, vibrato_cents, vibrato_length):
 
     freq_dev = np.abs(freq - freq * 2 ** (vibrato_cents / 1200))
     x = np.linspace(0, length, samplerate * length)
     modulation_wave = np.sin(x * 2 * np.pi * vibrato_length**-1) * freq_dev
-    phase_corrections = np.cumsum( np.multiply( x, np.concatenate(( np.zeros(1), 2 * np.pi * np.subtract(modulation_wave[:-1], modulation_wave[1:])))))
+    phase_corrections = np.cumsum(np.multiply( x, np.concatenate(( np.zeros(1), 2 * np.pi * np.subtract(modulation_wave[:-1], modulation_wave[1:])))))
     lst = list(map(
                 lambda xt, m, pc: np.sin(xt * 2 * np.pi * (freq + m) + pc) * amp,
                 x,
