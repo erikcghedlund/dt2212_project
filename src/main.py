@@ -23,10 +23,6 @@ formants = [730, 1090, 2300, 2440, 2800]
 cache_file = ".cache"
 pc = PersistentCache(LRUCache, cache_file, maxsize=32)
 
-with open("p.out", "r") as f:
-    p = list(map(float, filter(lambda s: s != "", f.read().split(" "))))
-
-
 def vibrato_wave(freq, length, amp, samplerate, vibrato_cents, vibrato_length):
 
     freq_dev = np.abs(freq - freq * 2 ** (vibrato_cents / 1200))
