@@ -1,6 +1,7 @@
 import numpy as np
 import sounddevice as sd
 import matplotlib.pyplot as plt
+import eng_to_ipa as ipa
 from time import sleep
 from copy import deepcopy
 
@@ -71,10 +72,31 @@ def joli_lowpass_formant_resonator(wave, t, formants, bandwidths):
 
     return ret_wave
 
+def trans_eng_into_ipa(words):
+    return ipa.convert(words)
+
+def vowel_to_formant(vowel):
+    vowel_formant_map = {
+        "i" : [280, 2250, 2890],
+        "ɪ" : [400, 1920, 2560],
+        "e" : [405, 2080, 2720],
+        "ɛ" : [550, 1770, 2490],
+        "æ" : [690, 1660, 2490],
+        "a" : [710, 1100, 2540],
+        "ɔ" : [550, 880, 2540],
+        "o" : [430, 980, 2480],
+        "ʊ" : [450, 1030, 2380],
+        "u" : [310, 870, 2250],
+        "ʌ" : [680, 1310, 2710]
+        }
+    return vowel_to_formant[vowel]
+
 
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
     voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
+    ipa = trans_eng_into_ipa("word")
+    formant = vowel_to_formant("a")
     sd.play(voice * volume, samplerate)
     sd.wait()
 
