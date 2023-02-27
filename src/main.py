@@ -3,7 +3,6 @@ import sounddevice as sd
 import matplotlib.pyplot as plt
 import eng_to_ipa as ipa
 from time import sleep
-from copy import deepcopy
 
 from cachetools import cached, LRUCache
 from shelved_cache import PersistentCache
@@ -19,7 +18,7 @@ vibrato_cents = 50
 vibrato_len = 0.2
 
 bandwidths = [25, 40, 60, 80, 100]
-formants = [730, 1090, 2300, 2440, 2800]
+singers_formant = [2400, 2800]
 
 cache_file = ".cache"
 pc = PersistentCache(LRUCache, cache_file, maxsize=32)
@@ -89,14 +88,15 @@ def vowel_to_formant(vowel):
         "u" : [310, 870, 2250],
         "ʌ" : [680, 1310, 2710]
         }
-    return vowel_to_formant[vowel]
+    return vowel_formant_map[vowel]
 
 
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
-    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
     ipa = trans_eng_into_ipa("word")
     formant = vowel_to_formant("a")
+    formants = sorted(formant + singers_formant)
+    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
     sd.play(voice * volume, samplerate)
     sd.wait()
 
