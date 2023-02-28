@@ -135,6 +135,7 @@ def main():
     vowels = split_ipa_into_vowels_list(ipa) 
     filtered_object = filter(filterletter, vowels)
     filtered_list = list(filtered_object)
+    print(filtered_list)
 
 if __name__ == "__main__":
-    main2()
+    main()
