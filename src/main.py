@@ -1,18 +1,20 @@
 import numpy as np
 import sounddevice as sd
-import matplotlib.pyplot as plt
 import eng_to_ipa as ipa
-from time import sleep
+import sys
 
 from cachetools import cached, LRUCache
 from shelved_cache import PersistentCache
 
+from song import Song
+
 freq = 100
 samplerate = int(3.2e4)
 length = 5
-volume = 0.05
+volume = 0.01
 slope = -2
 partials = np.floor(samplerate/(2*freq))
+pitchshift = 0
 
 vibrato_cents = 50
 vibrato_len = 0.2
@@ -27,7 +29,7 @@ pc = PersistentCache(LRUCache, cache_file, maxsize=32)
 def vibrato_wave(freq, length, amp, samplerate, vibrato_cents, vibrato_length):
 
     freq_dev = np.abs(freq - freq * 2 ** (vibrato_cents / 1200))
-    x = np.linspace(0, length, samplerate * length)
+    x = np.linspace(0, length, int(samplerate * length))
     modulation_wave = np.sin(x * 2 * np.pi * vibrato_length**-1) * freq_dev
     phase_corrections = np.cumsum(np.multiply( x, np.concatenate(( np.zeros(1), 2 * np.pi * np.subtract(modulation_wave[:-1], modulation_wave[1:])))))
     lst = list(map(
@@ -41,7 +43,7 @@ def vibrato_wave(freq, length, amp, samplerate, vibrato_cents, vibrato_length):
 
 @cached(pc)
 def sawtooth_wave(freq, length, samplerate, partials, slope):
-    wave = np.zeros(samplerate * length)
+    wave = np.zeros(int(samplerate * length))
     for i in np.arange(1, partials + 1):
         print("/".join(map(str, (i, partials))))
         vib_wave = vibrato_wave(freq * i, length, db_to_amp(slope * i), samplerate, vibrato_cents, vibrato_len)
@@ -90,6 +92,32 @@ def vowel_to_formant(vowel):
         }
     return vowel_formant_map[vowel]
 
+def midinum_to_freq(midi):
+    return 440 * 2 ** ((midi-69) / 12)
+
+
+def sing_song(song: Song):
+    time_per_meas = song.tempo**-1 * 4 * 60
+
+    def foo(note):
+        match note:
+            case (None, None):
+                return np.zeros(0)
+            case (None, _):
+                return np.zeros(int(time_per_meas * note[1] * samplerate))
+            case _:
+                return sawtooth_wave(midinum_to_freq(note[0] * 2**pitchshift), time_per_meas * note[1], samplerate, partials, slope)
+
+    waves = list(map(foo, song.notes))
+    return np.concatenate(waves)
+
+
+def main2():
+    wave = sing_song(Song(sys.argv[1]))
+    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
+    sd.play(voice * volume, samplerate)
+    sd.wait()
+
 
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
@@ -102,4 +130,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main2()
