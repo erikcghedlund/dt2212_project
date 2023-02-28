@@ -20,7 +20,7 @@ vibrato_cents = 50
 vibrato_len = 0.2
 
 bandwidths = [25, 40, 60, 80, 100]
-formants = [730, 1090, 2300, 2440, 2800]
+singers_formant = [2400, 2800]
 
 cache_file = ".cache"
 pc = PersistentCache(LRUCache, cache_file, maxsize=32)
@@ -121,9 +121,10 @@ def main2():
 
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
-    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
     ipa = trans_eng_into_ipa("word")
     formant = vowel_to_formant("a")
+    formants = sorted(formant + singers_formant)
+    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
     sd.play(voice * volume, samplerate)
     sd.wait()
 
