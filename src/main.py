@@ -103,7 +103,15 @@ def midinum_to_freq(midi):
     return 440 * 2 ** ((midi-69) / 12)
 
 
-def sing_song(song: Song):
+def sing_song(song: Song, vowels):
+
+    waves = generate_sawtooth_sequence(song)
+    len_vowels = len(vowels)
+    filtered_wave = [joli_lowpass_formant_resonator(wave, samplerate**-1, sorted(singers_formant + vowel_to_formant(vowels[i%len_vowels])), bandwidths) for i, wave in enumerate(waves)]
+    return np.concatenate(filtered_wave)
+
+def generate_sawtooth_sequence(song:Song):
+
     time_per_meas = song.tempo**-1 * 4 * 60
 
     def foo(note):
@@ -115,9 +123,7 @@ def sing_song(song: Song):
             case _:
                 return sawtooth_wave(midinum_to_freq(note[0] * 2**pitchshift), time_per_meas * note[1], samplerate, partials, slope)
 
-    waves = list(map(foo, song.notes))
-    return np.concatenate(waves)
-
+    return map(foo, song.notes)
 
 def main2():
     wave = sing_song(Song(sys.argv[1]))
@@ -128,14 +134,15 @@ def main2():
 
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
-    textfile = "hi.txt"
-    with open(textfile) as f:
+    with open(sys.argv[2]) as f:
         contents = f.read()
     ipa = trans_eng_into_ipa(contents)
-    vowels = split_ipa_into_vowels_list(ipa) 
+    vowels = split_ipa_into_vowels_list(ipa)
     filtered_object = filter(filterletter, vowels)
     filtered_list = list(filtered_object)
-    print(filtered_list)
+    voice = sing_song(Song(sys.argv[1]), filtered_list)
+    sd.play(voice * volume, samplerate)
+    sd.wait()
 
 if __name__ == "__main__":
     main()
