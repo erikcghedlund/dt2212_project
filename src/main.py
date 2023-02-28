@@ -88,10 +88,17 @@ def vowel_to_formant(vowel):
         "o" : [430, 980, 2480],
         "ʊ" : [450, 1030, 2380],
         "u" : [310, 870, 2250],
-        "ʌ" : [680, 1310, 2710]
+        "ʌ" : [680, 1310, 2710],
         }
     return vowel_formant_map[vowel]
 
+def filterletter(letter):
+    vowels_list = ["i","ɪ","e","ɛ","æ","a","ɔ","o","ʊ","u","ʌ"]
+    return letter in vowels_list
+
+def split_ipa_into_vowels_list(ipa):
+    vowels = [x for x in ipa]
+    return vowels
 def midinum_to_freq(midi):
     return 440 * 2 ** ((midi-69) / 12)
 
@@ -121,13 +128,14 @@ def main2():
 
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
-    ipa = trans_eng_into_ipa("word")
-    formant = vowel_to_formant("a")
-    formants = sorted(formant + singers_formant)
-    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
-    sd.play(voice * volume, samplerate)
-    sd.wait()
-
+    textfile = "hi.txt"
+    with open(textfile) as f:
+        contents = f.read()
+    ipa = trans_eng_into_ipa(contents)
+    vowels = split_ipa_into_vowels_list(ipa) 
+    filtered_object = filter(filterletter, vowels)
+    filtered_list = list(filtered_object)
+    print(filtered_list)
 
 if __name__ == "__main__":
-    main2()
+    main()
