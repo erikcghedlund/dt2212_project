@@ -1,5 +1,7 @@
+beautifulsoup4==4.11.2
 cachetools==5.3.0
-matplotlib==3.7.0
-numpy==1.22.3
-shelved_cache==0.3.0
+eng_to_ipa==0.0.2
+MIDI==0.2.3
+numpy==1.21.5
+shelved_cache==0.3.1
 sounddevice==0.4.6
