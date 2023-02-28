@@ -87,42 +87,26 @@ def vowel_to_formant(vowel):
         "ʊ" : [450, 1030, 2380],
         "u" : [310, 870, 2250],
         "ʌ" : [680, 1310, 2710],
-        " " : [0, 0, 0] #for whatever blanks
         }
     return vowel_formant_map[vowel]
+
+def filterletter(letter):
+    vowels_list = ["i","ɪ","e","ɛ","æ","a","ɔ","o","ʊ","u","ʌ"]
+    return letter in vowels_list
 
 def split_ipa_into_vowels_list(ipa):
     vowels = [x for x in ipa]
     return vowels
 
-#textfile = "hi.txt"
-def open_file(textfile):
-    with open(textfile) as f:
-        contents = f.read()
-        return contents
-
 def main():
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
-    contents = open_file("hi.txt")
+    textfile = "hi.txt"
+    with open(textfile) as f:
+        contents = f.read()
     ipa = trans_eng_into_ipa(contents)
-    vowels = split_ipa_into_vowels_list(ipa)
-    formant = vowel_to_formant("a")
-    formants = sorted(formant + singers_formant)
-    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
-    sd.play(voice * volume, samplerate)
-    sd.wait()
-
-
-    # for i in range(vowelslen):
-    #     formant = vowel_to_formant(vowels[i])
-    #     formants = sorted(formant + singers_formant)
-    #     voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
-    #     sd.play(voice * volume, samplerate)
-    
-    # print(vowels)
-    # print(contents)
-
-
+    vowels = split_ipa_into_vowels_list(ipa) 
+    filtered_object = filter(filterletter, vowels)
+    filtered_list = list(filtered_object)
 
 if __name__ == "__main__":
     main()
