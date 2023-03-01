@@ -5,6 +5,7 @@ import sys
 
 from cachetools import cached, LRUCache
 from shelved_cache import PersistentCache
+import logging
 
 from song import Song
 
@@ -99,9 +100,9 @@ def filterletter(letter):
 def split_ipa_into_vowels_list(ipa):
     vowels = [x for x in ipa]
     return vowels
+
 def midinum_to_freq(midi):
     return 440 * 2 ** ((midi-69) / 12)
-
 
 def sing_song(song: Song, vowels):
 
@@ -125,14 +126,19 @@ def generate_sawtooth_sequence(song:Song):
 
     return map(foo, song.notes)
 
+
+def taskdone():
+    logging.info('Lyrics parsing is done. Please enjoy the music. :)')
+
 def main2():
     wave = sing_song(Song(sys.argv[1]))
     voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
     sd.play(voice * volume, samplerate)
     sd.wait()
 
-
 def main():
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    logging.info('The lyrics are now being parsed to be a beautiful song... ')
     wave = sawtooth_wave(freq, length, samplerate, partials, slope)
     with open(sys.argv[2]) as f:
         contents = f.read()
@@ -141,6 +147,7 @@ def main():
     filtered_object = filter(filterletter, vowels)
     filtered_list = list(filtered_object)
     voice = sing_song(Song(sys.argv[1]), filtered_list)
+    taskdone()
     sd.play(voice * volume, samplerate)
     sd.wait()
 
