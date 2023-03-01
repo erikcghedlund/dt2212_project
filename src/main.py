@@ -2,6 +2,7 @@ import numpy as np
 import sounddevice as sd
 import eng_to_ipa as ipa
 import sys
+from copy import deepcopy
 
 from cachetools import cached, LRUCache
 from shelved_cache import PersistentCache
@@ -14,7 +15,7 @@ length = 5
 volume = 0.01
 slope = -2
 partials = np.floor(samplerate/(2*freq))
-pitchshift = 0
+transition_time = 0.1
 
 vibrato_cents = 50
 vibrato_len = 0.2
@@ -50,6 +51,14 @@ def sawtooth_wave(freq, length, samplerate, partials, slope):
         wave = np.add(wave, vib_wave)
     return wave
 
+
+def transition_wave(end_wave, new_wave):
+    l = int(transition_time * samplerate)
+    slope_fact = np.linspace(0, 1, l)
+    slope_up = np.multiply(new_wave[:l], slope_fact)
+    slope_down = np.multiply(end_wave[-l:], list(reversed(slope_fact)))
+    transition_wave = slope_up + slope_down
+    return np.concatenate((end_wave[:-l], transition_wave, new_wave[l:]))
 
 def db_to_amp(db):
     return 10**(db/20)
@@ -96,9 +105,6 @@ def filterletter(letter):
     vowels_list = ["i","ɪ","e","ɛ","æ","a","ɔ","o","ʊ","u","ʌ"]
     return letter in vowels_list
 
-def split_ipa_into_vowels_list(ipa):
-    vowels = [x for x in ipa]
-    return vowels
 def midinum_to_freq(midi):
     return 440 * 2 ** ((midi-69) / 12)
 
@@ -108,7 +114,13 @@ def sing_song(song: Song, vowels):
     waves = generate_sawtooth_sequence(song)
     len_vowels = len(vowels)
     filtered_wave = [joli_lowpass_formant_resonator(wave, samplerate**-1, sorted(singers_formant + vowel_to_formant(vowels[i%len_vowels])), bandwidths) for i, wave in enumerate(waves)]
-    return np.concatenate(filtered_wave)
+    ret_wave = transition_wave(filtered_wave[0], filtered_wave[1])
+    for fwave in filtered_wave[2:]:
+        if len(fwave) < transition_time * samplerate:
+            continue
+        ret_wave = transition_wave(ret_wave, fwave)
+        print(len(ret_wave))
+    return ret_wave
 
 def generate_sawtooth_sequence(song:Song):
 
@@ -121,15 +133,9 @@ def generate_sawtooth_sequence(song:Song):
             case (None, _):
                 return np.zeros(int(time_per_meas * note[1] * samplerate))
             case _:
-                return sawtooth_wave(midinum_to_freq(note[0] * 2**pitchshift), time_per_meas * note[1], samplerate, partials, slope)
+                return sawtooth_wave(midinum_to_freq(note[0]), time_per_meas * note[1], samplerate, partials, slope)
 
     return map(foo, song.notes)
-
-def main2():
-    wave = sing_song(Song(sys.argv[1]))
-    voice = joli_lowpass_formant_resonator(wave, samplerate**-1, formants, bandwidths)
-    sd.play(voice * volume, samplerate)
-    sd.wait()
 
 
 def main():
@@ -137,8 +143,7 @@ def main():
     with open(sys.argv[2]) as f:
         contents = f.read()
     ipa = trans_eng_into_ipa(contents)
-    vowels = split_ipa_into_vowels_list(ipa)
-    filtered_object = filter(filterletter, vowels)
+    filtered_object = filter(filterletter, ipa)
     filtered_list = list(filtered_object)
     voice = sing_song(Song(sys.argv[1]), filtered_list)
     sd.play(voice * volume, samplerate)
