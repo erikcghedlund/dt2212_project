@@ -4,3 +4,4 @@ eng_to_ipa
 numpy==1.21.5
 shelved_cache==0.3.1
 sounddevice==0.4.6
+PyPDF2==3.0.1
