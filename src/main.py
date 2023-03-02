@@ -15,7 +15,7 @@ length = 5
 volume = 0.01
 slope = -2
 partials = np.floor(samplerate/(2*freq))
-transition_time = 0.1
+transition_time = 0.3
 
 vibrato_cents = 50
 vibrato_len = 0.2
@@ -53,12 +53,13 @@ def sawtooth_wave(freq, length, samplerate, partials, slope):
 
 
 def transition_wave(end_wave, new_wave):
-    l = int(transition_time * samplerate)
-    slope_fact = np.linspace(0, 1, l)
-    slope_up = np.multiply(new_wave[:l], slope_fact)
-    slope_down = np.multiply(end_wave[-l:], list(reversed(slope_fact)))
+    l = min((int(transition_time * samplerate), len(end_wave), len(new_wave)))//2
+    slope_fact = np.linspace(0, 1, l * 2)
+    slope_up = np.multiply(np.concatenate((new_wave[-l:], new_wave[:l])), slope_fact)
+    slope_down = np.multiply(np.concatenate((end_wave[-l:], end_wave[:l])), list(reversed(slope_fact)))
     transition_wave = slope_up + slope_down
-    return np.concatenate((end_wave[:-l], transition_wave, new_wave[l:]))
+    ret_wave = np.concatenate((end_wave[:-l], transition_wave, new_wave[l:]))
+    return ret_wave
 
 def db_to_amp(db):
     return 10**(db/20)
@@ -116,10 +117,7 @@ def sing_song(song: Song, vowels):
     filtered_wave = [joli_lowpass_formant_resonator(wave, samplerate**-1, sorted(singers_formant + vowel_to_formant(vowels[i%len_vowels])), bandwidths) for i, wave in enumerate(waves)]
     ret_wave = transition_wave(filtered_wave[0], filtered_wave[1])
     for fwave in filtered_wave[2:]:
-        if len(fwave) < transition_time * samplerate:
-            continue
         ret_wave = transition_wave(ret_wave, fwave)
-        print(len(ret_wave))
     return ret_wave
 
 def generate_sawtooth_sequence(song:Song):
