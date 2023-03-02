@@ -15,10 +15,10 @@ length = 5
 volume = 0.01
 slope = -2
 partials = np.floor(samplerate/(2*freq))
-transition_time = 0.3
+transition_time = 0.5
 
 vibrato_cents = 50
-vibrato_len = 0.2
+vibrato_length = 0.2
 
 bandwidths = [25, 40, 60, 80, 100]
 singers_formant = [2400, 2800]
@@ -27,10 +27,10 @@ cache_file = ".cache"
 pc = PersistentCache(LRUCache, cache_file, maxsize=32)
 
 
-def vibrato_wave(freq, length, amp, samplerate, vibrato_cents, vibrato_length):
+def vibrato_wave(freq, length, amp):
 
     freq_dev = np.abs(freq - freq * 2 ** (vibrato_cents / 1200))
-    x = np.linspace(0, length, int(samplerate * length))
+    x = np.linspace(t0, length + t0, int(samplerate * length))
     modulation_wave = np.sin(x * 2 * np.pi * vibrato_length**-1) * freq_dev
     phase_corrections = np.cumsum(np.multiply( x, np.concatenate(( np.zeros(1), 2 * np.pi * np.subtract(modulation_wave[:-1], modulation_wave[1:])))))
     lst = list(map(
@@ -43,11 +43,11 @@ def vibrato_wave(freq, length, amp, samplerate, vibrato_cents, vibrato_length):
 
 
 @cached(pc)
-def sawtooth_wave(freq, length, samplerate, partials, slope):
+def sawtooth_wave(freq, length):
     wave = np.zeros(int(samplerate * length))
     for i in np.arange(1, partials + 1):
         print("/".join(map(str, (i, partials))))
-        vib_wave = vibrato_wave(freq * i, length, db_to_amp(slope * i), samplerate, vibrato_cents, vibrato_len)
+        vib_wave = vibrato_wave(freq * i, length, db_to_amp(slope * i), t0)
         wave = np.add(wave, vib_wave)
     return wave
 
@@ -131,13 +131,13 @@ def generate_sawtooth_sequence(song:Song):
             case (None, _):
                 return np.zeros(int(time_per_meas * note[1] * samplerate))
             case _:
-                return sawtooth_wave(midinum_to_freq(note[0]), time_per_meas * note[1], samplerate, partials, slope)
+                return sawtooth_wave(midinum_to_freq(note[0]), time_per_meas * note[1])
 
     return map(foo, song.notes)
 
 
 def main():
-    wave = sawtooth_wave(freq, length, samplerate, partials, slope)
+    wave = sawtooth_wave(freq, length)
     with open(sys.argv[2]) as f:
         contents = f.read()
     ipa = trans_eng_into_ipa(contents)
