@@ -30,3 +30,7 @@ Using the scores provided in the repo to test it:
 ```bash
 python src/main.py scores/Pokémon_Theme-Tenor.musicxml scores/Pokémon_Theme.txt
 ```
+
+## Recordings
+
+You'll also find some wav-files of previously synthesised songs in the `recordings/` folder in this repository.
