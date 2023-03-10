@@ -25,7 +25,7 @@ class Song:
 
     def __init_musicxml__(self, file):
 
-        def strip_tags(val):  # This is retarded and most likely a improper way to do this, but it does work
+        def strip_tags(val):  # This is not very smart and most likely a improper way to do this, but it does work
             if val is None:
                 return None
             rval = str(val)
